@@ -8,10 +8,22 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Layouts\Betha\CancelarNfseEnvio.cs" />
+    <Compile Remove="Layouts\Betha\CancelarNfseResposta.cs" />
+    <Compile Remove="Layouts\Betha\Comuns.cs" />
+    <Compile Remove="Layouts\Betha\ConsultarLoteRpsEnvio.cs" />
+    <Compile Remove="Layouts\Betha\ConsultarLoteRpsResposta.cs" />
+    <Compile Remove="Layouts\Betha\ConsultarNfseRpsEnvio.cs" />
+    <Compile Remove="Layouts\Betha\ConsultarNfseRpsResposta.cs" />
+    <Compile Remove="Layouts\Betha\ConsultarSituacaoLoteRpsEnvio.cs" />
+    <Compile Remove="Layouts\Betha\ConsultarSituacaoLoteRpsResposta.cs" />
+    <Compile Remove="Layouts\Betha\EnviarLoteRpsEnvio.cs" />
+    <Compile Remove="Layouts\Betha\EnviarLoteRpsResposta.cs" />
     <Compile Remove="Layouts\ISSNET\nfse_xmldsig-core-schema20020212.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Layouts\Betha\" />
     <Folder Include="schemas\WSDL\Producao\" />
   </ItemGroup>
 
