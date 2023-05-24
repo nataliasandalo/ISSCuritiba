@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Layouts\ISSNET\nfse_xmldsig-core-schema20020212.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="schemas\WSDL\Producao\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Web.Services.Description" Version="6.0.0" />
+  </ItemGroup>
+
+</Project>
