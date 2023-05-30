@@ -16,6 +16,10 @@ using System.Web.Services;
 using System.Xml;
 using System.Xml.Serialization;
 using System.Web.Services.Description;
+using System.ServiceModel.Description;
+using System.Net.Http;
+using System.Xml.Schema;
+using System.Diagnostics;
 
 namespace NFSE.Net
 {
@@ -341,12 +345,12 @@ namespace NFSE.Net
         /// <summary>
         /// Gerar o source code do serviço
         /// </summary>
-        private void GerarClasse()
+        private async Task GerarClasse()
         {
             #region Gerar o código da classe
             StringWriter writer = new StringWriter(CultureInfo.CurrentCulture);
             CSharpCodeProvider provider = new CSharpCodeProvider();
-            provider.GenerateCodeFromNamespace(GerarGrafo(), writer, null);
+            provider.GenerateCodeFromNamespace(await GerarGrafo(), writer, null);
             #endregion
 
             string codigoClasse = writer.ToString();
@@ -379,59 +383,144 @@ namespace NFSE.Net
         /// <summary>
         /// Gerar a estrutura e o grafo da classe
         /// </summary>
-        private CodeNamespace GerarGrafo()
+        //private CodeNamespace GerarGrafo()
+        //{
+        //    #region Gerar a estrutura da classe do serviço
+        //    //Gerar a estrutura da classe do serviço
+        //    ServiceDescriptionImporter importer = new ServiceDescriptionImporter();
+        //    importer.AddServiceDescription(this.serviceDescription, string.Empty, string.Empty);
+
+        //    //Definir o nome do protocolo a ser utilizado
+        //    //Não posso definir, tenho que deixar por conta do WSDL definir, ou pode dar erro em alguns estados
+        //    //importer.ProtocolName = "Soap12";
+        //    //importer.ProtocolName = "Soap";
+
+        //    //Tipos deste serviço devem ser gerados como propriedades e não como simples campos
+        //    importer.CodeGenerationOptions = CodeGenerationOptions.GenerateProperties;
+        //    #endregion
+
+        //    #region Se a NFSe for padrão DUETO/WEBISS/SALVADOR_BA/PRONIN preciso importar os schemas do WSDL
+        //    if (Propriedade.TipoAplicativo == TipoAplicativo.Nfse && (PadraoNFSe == PadroesNFSe.DUETO || PadraoNFSe == PadroesNFSe.WEBISS || PadraoNFSe == PadroesNFSe.SALVADOR_BA || PadraoNFSe == PadroesNFSe.GIF || PadraoNFSe == PadroesNFSe.PRONIN))
+        //    {
+        //        //Tive que utilizar a WebClient para que a OpenRead funcionasse, não foi possível fazer funcionar com a SecureWebClient. Tem que analisar melhor. Wandrey e Renan 10/09/2013
+        //        WebClient client = new WebClient();
+        //        Stream stream = client.OpenRead(ArquivoWSDL);
+
+        //        //Esta sim tem que ser com a SecureWebClient pq tem que ter o certificado. Wandrey 10/09/2013
+        //        SecureWebClient client2 = new SecureWebClient(oCertificado);
+
+        //        // Add any imported files
+        //        foreach (System.Xml.Schema.XmlSchema wsdlSchema in serviceDescription.Types.Schemas)
+        //        {
+        //            foreach (System.Xml.Schema.XmlSchemaObject externalSchema in wsdlSchema.Includes)
+        //            {
+        //                if (externalSchema is System.Xml.Schema.XmlSchemaImport)
+        //                {
+        //                    Uri baseUri = new Uri(ArquivoWSDL);
+        //                    Uri schemaUri = new Uri(baseUri, ((System.Xml.Schema.XmlSchemaExternal)externalSchema).SchemaLocation);
+        //                    stream = client2.OpenRead(schemaUri);
+        //                    System.Xml.Schema.XmlSchema schema = System.Xml.Schema.XmlSchema.Read(stream, null);
+        //                    importer.Schemas.Add(schema);
+        //                }
+        //            }
+        //        }
+        //    }
+        //    #endregion
+
+        //    #region Gerar o o grafo da classe para depois gerar o código
+        //    CodeNamespace @namespace = new CodeNamespace();
+        //    CodeCompileUnit unit = new CodeCompileUnit();
+        //    unit.Namespaces.Add(@namespace);
+        //    ServiceDescriptionImportWarnings warmings = importer.Import(@namespace, unit);
+        //    #endregion
+
+        //    return @namespace;
+        //}
+
+        private async Task<CodeNamespace> GerarGrafo()
         {
-            #region Gerar a estrutura da classe do serviço
-            //Gerar a estrutura da classe do serviço
-            ServiceDescriptionImporter importer = new ServiceDescriptionImporter();
-            importer.AddServiceDescription(this.serviceDescription, string.Empty, string.Empty);
+            // Gerar um arquivo temporário para salvar o WSDL
+            string wsdlFilePath = Path.GetTempFileName();
 
-            //Definir o nome do protocolo a ser utilizado
-            //Não posso definir, tenho que deixar por conta do WSDL definir, ou pode dar erro em alguns estados
-            //importer.ProtocolName = "Soap12";
-            //importer.ProtocolName = "Soap";
-
-            //Tipos deste serviço devem ser gerados como propriedades e não como simples campos
-            importer.CodeGenerationOptions = CodeGenerationOptions.GenerateProperties;
-            #endregion
-
-            #region Se a NFSe for padrão DUETO/WEBISS/SALVADOR_BA/PRONIN preciso importar os schemas do WSDL
-            if (Propriedade.TipoAplicativo == TipoAplicativo.Nfse && (PadraoNFSe == PadroesNFSe.DUETO || PadraoNFSe == PadroesNFSe.WEBISS || PadraoNFSe == PadroesNFSe.SALVADOR_BA || PadraoNFSe == PadroesNFSe.GIF || PadraoNFSe == PadroesNFSe.PRONIN))
+            try
             {
-                //Tive que utilizar a WebClient para que a OpenRead funcionasse, não foi possível fazer funcionar com a SecureWebClient. Tem que analisar melhor. Wandrey e Renan 10/09/2013
-                WebClient client = new WebClient();
-                Stream stream = client.OpenRead(ArquivoWSDL);
+                // Utilize a HttpClient para baixar o arquivo WSDL
+                using HttpClient client = new();
+                using Stream wsdlStream = await client.GetStreamAsync(ArquivoWSDL);
 
-                //Esta sim tem que ser com a SecureWebClient pq tem que ter o certificado. Wandrey 10/09/2013
-                SecureWebClient client2 = new SecureWebClient(oCertificado);
+                // Salvar o WSDL no arquivo temporário
+                using FileStream fileStream = new(wsdlFilePath, FileMode.Create, FileAccess.Write);
+                await wsdlStream.CopyToAsync(fileStream);
 
-                // Add any imported files
-                foreach (System.Xml.Schema.XmlSchema wsdlSchema in serviceDescription.Types.Schemas)
+                // Executar o utilitário Wsdl.exe para gerar o código
+                ProcessStartInfo startInfo = new ProcessStartInfo
                 {
-                    foreach (System.Xml.Schema.XmlSchemaObject externalSchema in wsdlSchema.Includes)
+                    FileName = "wsdl.exe",
+                    Arguments = $"\"{wsdlFilePath}\" /out:\"{Path.GetDirectoryName(wsdlFilePath)}\"",
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                };
+
+                using Process process = Process.Start(startInfo);
+                string output = await process.StandardOutput.ReadToEndAsync();
+                string error = await process.StandardError.ReadToEndAsync();
+                process.WaitForExit();
+
+                if (process.ExitCode == 0)
+                {
+                    // Ler o código gerado
+                    string codeFilePath = Path.ChangeExtension(wsdlFilePath, ".cs");
+                    string[] codeLines = await File.ReadAllLinesAsync(codeFilePath);
+
+                    // Criar um namespace e adicionar o código gerado
+                    CodeNamespace @namespace = new CodeNamespace();
+                    @namespace.Imports.Add(new CodeNamespaceImport("System"));
+                    @namespace.Imports.Add(new CodeNamespaceImport("System.ServiceModel"));
+
+                    foreach (string codeLine in codeLines)
                     {
-                        if (externalSchema is System.Xml.Schema.XmlSchemaImport)
+                        if (!string.IsNullOrWhiteSpace(codeLine))
                         {
-                            Uri baseUri = new Uri(ArquivoWSDL);
-                            Uri schemaUri = new Uri(baseUri, ((System.Xml.Schema.XmlSchemaExternal)externalSchema).SchemaLocation);
-                            stream = client2.OpenRead(schemaUri);
-                            System.Xml.Schema.XmlSchema schema = System.Xml.Schema.XmlSchema.Read(stream, null);
-                            importer.Schemas.Add(schema);
+                            CodeTypeDeclaration codeType = new CodeTypeDeclaration();
+                            codeType.Members.Add(new CodeSnippetTypeMember(codeLine));
+                            @namespace.Types.Add(codeType);
                         }
                     }
+
+                    return @namespace;
+                }
+                else
+                {
+                    // Exceção se ocorrer um erro ao executar o utilitário Wsdl.exe
+                    throw new Exception($"Erro ao gerar o código do serviço a partir do WSDL: {error}");
                 }
             }
-            #endregion
-
-            #region Gerar o o grafo da classe para depois gerar o código
-            CodeNamespace @namespace = new CodeNamespace();
-            CodeCompileUnit unit = new CodeCompileUnit();
-            unit.Namespaces.Add(@namespace);
-            ServiceDescriptionImportWarnings warmings = importer.Import(@namespace, unit);
-            #endregion
-
-            return @namespace;
+            finally
+            {
+                // Excluir o arquivo temporário do WSDL
+                File.Delete(wsdlFilePath);
+            }
         }
+
+        private ServiceDescription ObterServiceDescription()
+        {
+            // Implemente aqui a lógica para obter o objeto ServiceDescription do seu serviço
+            // Por exemplo, você pode usar o método GetMetadataSet() para obter os metadados do serviço
+
+            string wsdlUrl = "URL do WSDL";
+            using (HttpClient httpClient = new HttpClient())
+            {
+                using (Stream wsdlStream = httpClient.GetStreamAsync(wsdlUrl).Result)
+                {
+                    XmlReader wsdlReader = XmlReader.Create(wsdlStream);
+                    ServiceDescription serviceDescription = ServiceDescription.Read(wsdlReader);
+                    return serviceDescription;
+                }
+            }
+        }
+
         #endregion
 
         #region RelacCertificado

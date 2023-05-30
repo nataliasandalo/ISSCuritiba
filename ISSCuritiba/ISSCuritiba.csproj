@@ -28,6 +28,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Private.ServiceModel" Version="4.10.2" />
+    <PackageReference Include="System.ServiceModel.Http" Version="6.0.0" />
+    <PackageReference Include="System.ServiceModel.Primitives" Version="6.0.0" />
     <PackageReference Include="System.Web.Services.Description" Version="6.0.0" />
   </ItemGroup>
 

@@ -1,0 +1,27 @@
+﻿<Window x:Class="NFSE.Net.Tests.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="NFSE.Net Tests" Height="450" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Button Content="Gerar Rps" Click="GerarRpsBtn_Click" Margin="10"/>
+        <Button Content="Enviar Rps" Click="EnviarRpsBtn_Click" Margin="10" Grid.Row="1"/>
+        <Button Content="Consultar situação Lote" Click="ConsultarSituacaoLoteBtn_Click" Margin="10" Grid.Row="2"/>
+        <Button Content="Consultar lote Rps" Click="ConsultarLoteBtn_Click" Margin="10" Grid.Row="3"/>
+        <Button Content="Gravar Informação Empresa" Click="GravarInformacaoEmpresaBtn_Click" Margin="10" Grid.Row="4"/>
+        <Button Content="Envio Completo" Click="EnvioCompletoBtn_Click" Margin="10" Grid.Row="5"/>
+        <Button Content="Consultar RPS" Click="ConsultarRpsBtn_Click" Margin="10" Grid.Row="6"/>
+        <Button Content="Cancelar NFSe" Click="CancelamentoNFSeBtn_Click" Margin="10" Grid.Row="7"/>
+        <!--<TextBox x:Name="OutputTextBox" Grid.Row="8" Margin="10"/>-->
+    </Grid>
+</Window>
