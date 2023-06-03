@@ -1,4 +1,4 @@
-﻿<Window x:Class="NFSE.Net.Tests.MainWindow"
+﻿<Window x:Class="ISSCuritibaWPF.Ui.NFEWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="NFSE.Net Tests" Height="450" Width="800">
